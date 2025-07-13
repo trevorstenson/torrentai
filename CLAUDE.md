@@ -65,6 +65,11 @@ torrentai list                      # Show downloaded content
 torrentai search "blade runner"     # Search without downloading
 ```
 
+## How to Run while developing (ex ubuntu magnet link, not natural language llm)
+```bash
+cargo run -- download "magnet:?xt=urn:btih:cab507494d02ebb1178b38f2e9d7be299c86b862"
+```
+
 ## Configuration
 
 ### Config File (`~/.torrentai/config.toml`)
@@ -90,12 +95,6 @@ max_file_age_days = 365
 ```
 
 ## Future Roadmap
-
-### Content Quality Intelligence
-- Video quality analysis using ML
-- Audio quality detection for music
-- Malware scanning integration
-- Community-driven reputation system
 
 ### Proactive Features
 - Release calendar monitoring
@@ -141,15 +140,9 @@ max_file_age_days = 365
 
 2. **Initial Implementation Order**
    - Start with CLI argument parsing
-   - Implement single indexer scraping
-   - Add basic LLM integration
    - Connect torrent downloading
+   - Add basic LLM integration
+   - Implement single indexer scraping
    - Test with simple queries
-
-3. **Testing Strategy**
-   - Unit tests for each component
-   - Integration tests with mock indexers
-   - End-to-end tests with real (legal) content
-   - Performance benchmarks for search speed
 
 This project combines practical utility with learning opportunities in AI integration, web scraping, P2P protocols, and systems programming in Rust.
