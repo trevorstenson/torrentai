@@ -7,19 +7,45 @@ A natural language BitTorrent client that uses local LLMs to understand and fulf
 TorrentAI is an intelligent torrent client built in Rust that accepts natural language requests and automatically finds, evaluates, and downloads content from multiple torrent indexers. Simply tell it what you want, and it handles the entire process from search to download.
 
 ## Features
-TBD
+
+- **Multi-Source Search**: Search across multiple torrent indexers (ThePirateBay, YTS.mx)
+- **Movie-Focused YTS Integration**: High-quality movie torrents from YTS with multiple resolutions
+- **Concurrent Search**: Search multiple sources simultaneously for faster results
+- **Clean Output**: Well-formatted results with clear source identification
+- **Direct Download**: Download torrents via magnet links
+- **Rust Performance**: Fast and reliable implementation
+
+## Search Commands
+
+### Search ThePirateBay
+```bash
+torrentai search "iron man"
+```
+
+### Search YTS Movies
+```bash
+torrentai search-yts "avengers"
+```
+
+### Search All Sources
+```bash
+torrentai search-all "iron man"
+```
 
 ## Example Usage
 
 ```bash
-# Download movies
-torrentai "download the matrix trilogy"
+# Search for movies on YTS (high quality, small file sizes)
+torrentai search-yts "the matrix"
 
-# TV series with quality preference
-torrentai "get breaking bad season 1 in 1080p"
+# Search across all sources for maximum results
+torrentai search-all "breaking bad"
 
-# Music with format preference
-torrentai "find pink floyd dark side of the moon flac"
+# Search ThePirateBay for general torrents
+torrentai search "ubuntu iso"
+
+# Download torrents directly
+torrentai download "magnet:?xt=urn:btih:..."
 
 # Management commands
 torrentai status    # Show active downloads
@@ -30,8 +56,21 @@ torrentai list      # Show downloaded content
 
 ### Development Usage
 
-Currently in early development. To test basic torrent downloading:
+Currently in early development. To test the search and download functionality:
 
 ```bash
+# Test YTS movie search
+cargo run -- search-yts "iron man"
+
+# Test combined search
+cargo run -- search-all "avengers"
+
+# Test direct download
 cargo run -- download "magnet:?xt=urn:btih:cab507494d02ebb1178b38f2e9d7be299c86b862"
 ```
+
+## Supported Sources
+
+- **ThePirateBay**: General torrent search via HTML scraping
+- **YTS.mx**: High-quality movie torrents via official API
+- More sources planned for future releases
