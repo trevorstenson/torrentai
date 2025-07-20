@@ -8,6 +8,10 @@ mod downloader;
 mod pirate_bay_scraper;
 mod yts_scraper;
 mod scraper;
+mod models;
+mod prompts;
+mod llm_service;
+mod smart_search;
 
 #[derive(Parser)]
 #[command(name = "torrentai")]
@@ -52,6 +56,32 @@ enum Commands {
     
     /// List downloaded content
     List,
+    
+    /// Smart search using natural language
+    SmartSearch {
+        /// Natural language search query
+        query: String,
+        
+        /// Automatically download the best match
+        #[arg(long)]
+        auto_download: bool,
+        
+        /// Minimum confidence threshold (0.0-1.0)
+        #[arg(long, default_value = "0.7")]
+        min_confidence: f32,
+        
+        /// LLM model to use
+        #[arg(long, default_value = "deepseek-r1:7b")]
+        model: String,
+        
+        /// Show detailed evaluation reasoning
+        #[arg(long)]
+        verbose: bool,
+        
+        /// Download directory (if auto-download is enabled)
+        #[arg(short, long, default_value = "./downloads")]
+        output: PathBuf,
+    },
 }
 
 #[tokio::main]
@@ -228,6 +258,48 @@ async fn main() -> Result<()> {
         }
         Commands::List => {
             info!("List command not yet implemented");
+        }
+        Commands::SmartSearch { query, auto_download, min_confidence, model, verbose, output } => {
+            use crate::llm_service::LlmService;
+            use crate::smart_search::{SmartSearcher, display_evaluated_result};
+            
+            // Initialize LLM service
+            let llm = LlmService::new(model)?;
+            
+            // Check LLM availability
+            println!("🔍 Checking LLM service...");
+            llm.health_check().await?;
+            llm.ensure_model().await?;
+            
+            // Create searcher
+            let searcher = SmartSearcher::new(llm, min_confidence);
+            
+            // Perform search
+            let results = searcher.search(&query).await?;
+            
+            if results.is_empty() {
+                println!("\n❌ No results found with confidence >= {}", min_confidence);
+                return Ok(());
+            }
+            
+            // Display results
+            println!("\n📊 Top Results (ranked by relevance):");
+            for (i, result) in results.iter().take(5).enumerate() {
+                display_evaluated_result(i + 1, result, verbose);
+            }
+            
+            // Auto-download logic
+            if auto_download && !results.is_empty() {
+                let best = &results[0];
+                if best.relevance_score >= 0.9 {
+                    println!("\n✅ Auto-downloading best match...");
+                    downloader::download_torrent(&best.torrent.magnet_link, output).await?;
+                } else {
+                    println!("\n⚠️  Best match has relevance {:.0}% - manual confirmation required", 
+                             best.relevance_score * 100.0);
+                    println!("To download, run: torrentai download \"{}\"", best.torrent.magnet_link);
+                }
+            }
         }
     }
     

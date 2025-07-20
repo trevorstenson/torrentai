@@ -1,3 +1,5 @@
-/target
+target
 .claude
 .serena
+.kiro
+node_modules
